@@ -485,9 +485,70 @@ Done!
 
 ---
 
-## (Optional) Run It Automatically Every Day
+## (Recommended) Run It Automatically Every Day — GitHub Actions
 
-Instead of running the script manually each time, you can set it up to run automatically — for example, every morning at 8 AM.
+This is the **easiest "set-and-forget"** option. GitHub will run the script for you in the cloud every day — your computer doesn't even need to be on.
+
+This repo already includes the workflow file (`.github/workflows/daily-notify.yml`). All you need to do is add your secrets on GitHub:
+
+### Step-by-step
+
+1. **Go to your fork / copy of this repo on GitHub** (e.g. `https://github.com/YOUR_USERNAME/Canvas-Noti`).
+
+2. Click the **"Settings"** tab at the top of the repo page.
+   - If you don't see "Settings", make sure this is **your own** repo (fork it first if it isn't).
+
+3. In the left sidebar, click **"Secrets and variables"** → **"Actions"**.
+
+4. Click the green **"New repository secret"** button and add each of these **one at a time**:
+
+   | Secret name | Value |
+   |---|---|
+   | `CANVAS_API_URL` | Your Canvas base URL, e.g. `https://myschool.instructure.com` |
+   | `CANVAS_API_TOKEN` | Your Canvas API token from Step 4 |
+   | `DISCORD_WEBHOOK_URL` | Your Discord webhook URL from Step 5 |
+
+   For each one: type the **Name** exactly as shown, paste the **Value**, and click **"Add secret"**.
+
+5. **(Optional)** Add these extra secrets if you want to customize behavior:
+
+   | Secret name | Default | What it does |
+   |---|---|---|
+   | `DAYS_AHEAD` | `7` | How many days ahead to look |
+   | `NOTIFY_ASSIGNMENTS` | `true` | Set to `false` to hide assignments |
+   | `NOTIFY_DISCUSSIONS` | `true` | Set to `false` to hide discussions |
+
+6. **Test it right now!** Go to the **"Actions"** tab → click **"Daily Canvas Notification"** in the left sidebar → click **"Run workflow"** → click the green **"Run workflow"** button.
+
+7. Wait about 30 seconds, then check your Discord channel — you should see your notifications!
+
+### Changing the schedule
+
+The workflow runs daily at **1:00 PM UTC** by default (that's 8:00 AM EST / 5:00 AM PST).
+
+To change the time, edit `.github/workflows/daily-notify.yml` and update the `cron` line:
+
+```yaml
+    - cron: "0 13 * * *"
+```
+
+**Common schedules (all in UTC):**
+
+| Cron expression | UTC time | Eastern (EST) | Pacific (PST) |
+|---|---|---|---|
+| `"0 11 * * *"` | 11:00 AM | 6:00 AM | 3:00 AM |
+| `"0 13 * * *"` | 1:00 PM | 8:00 AM | 5:00 AM |
+| `"0 15 * * *"` | 3:00 PM | 10:00 AM | 7:00 AM |
+| `"0 18 * * *"` | 6:00 PM | 1:00 PM | 10:00 AM |
+| `"0 1 * * *"` | 1:00 AM | 8:00 PM (prev day) | 5:00 PM (prev day) |
+
+> **Tip:** To convert to your timezone, Google "1:00 PM UTC to [your timezone]".
+
+---
+
+## (Alternative) Run Automatically from Your Computer
+
+If you prefer to run it from your own machine instead of GitHub Actions, you can use your OS's built-in scheduler. **Your computer must be on** at the scheduled time for this to work.
 
 <details>
 <summary><strong>Windows — Task Scheduler</strong></summary>
@@ -583,12 +644,15 @@ The messages use colors to help you quickly see what's urgent:
 
 ```
 Canvas-Noti/
-├── canvas_notifier.py   # The main script (you run this)
-├── .env.example         # Template — copy this to .env
-├── .env                 # YOUR config with secrets (not tracked by git)
-├── requirements.txt     # Python packages needed
-├── .gitignore           # Tells git to ignore .env and other junk
-└── README.md            # This file
+├── .github/
+│   └── workflows/
+│       └── daily-notify.yml   # GitHub Actions — runs the script daily in the cloud
+├── canvas_notifier.py         # The main script (you run this)
+├── .env.example               # Template — copy this to .env
+├── .env                       # YOUR config with secrets (not tracked by git)
+├── requirements.txt           # Python packages needed
+├── .gitignore                 # Tells git to ignore .env and other junk
+└── README.md                  # This file
 ```
 
 ## License
