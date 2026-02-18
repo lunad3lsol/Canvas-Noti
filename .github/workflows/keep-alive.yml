@@ -1,0 +1,29 @@
+name: Keep Alive
+
+# GitHub disables scheduled workflows on repos with no activity for 60 days.
+# This workflow makes a harmless no-op commit every 50 days to prevent that.
+
+on:
+  schedule:
+    # Once every 50 days (well within the 60-day limit)
+    - cron: "0 12 1 */2 *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Create keep-alive commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: keep-alive commit to prevent workflow auto-disable"
+          git push
