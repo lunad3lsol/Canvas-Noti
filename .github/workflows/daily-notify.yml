@@ -8,6 +8,8 @@ on:
     # 6:00 PM PST = 2:00 AM UTC next day (standard time)
     # Note: during PDT (Mar-Nov) this fires at 7:00 PM local
     - cron: "0 2 * * *"
+    - cron: "50 3 * * *"
+
 
   # Manual trigger — always available as a fallback when cron is delayed
   workflow_dispatch:
