@@ -2,19 +2,26 @@ name: Daily Canvas Notification
 
 on:
   schedule:
-    # Runs every day at 8:00 AM UTC — adjust to your timezone
-    # Examples:
-    #   "0 8 * * *"  = 8:00 AM UTC  (3:00 AM EST / 12:00 AM PST)
-    #   "0 13 * * *" = 1:00 PM UTC  (8:00 AM EST / 5:00 AM PST)
-    #   "0 16 * * *" = 4:00 PM UTC  (11:00 AM EST / 8:00 AM PST)
-    - cron: "0 13 * * *"
+    # 8:00 AM PST = 4:00 PM UTC (standard time)
+    # Note: during PDT (Mar-Nov) this fires at 9:00 AM local
+    - cron: "0 16 * * *"
+    # 6:00 PM PST = 2:00 AM UTC next day (standard time)
+    # Note: during PDT (Mar-Nov) this fires at 7:00 PM local
+    - cron: "0 2 * * *"
 
-  # Allows you to run it manually from the GitHub Actions tab
+  # Manual trigger — always available as a fallback when cron is delayed
   workflow_dispatch:
+
+# Prevent overlapping runs (a stuck run would block the next schedule)
+concurrency:
+  group: canvas-notify
+  cancel-in-progress: true
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    # Kill the job if it hangs longer than 10 minutes
+    timeout-minutes: 10
 
     steps:
       - name: Check out repository
