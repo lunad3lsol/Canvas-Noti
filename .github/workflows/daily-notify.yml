@@ -2,16 +2,18 @@ name: Daily Canvas Notification
 
 on:
   schedule:
-    # 8:00 AM PST = 4:00 PM UTC (standard time)
-    # Note: during PDT (Mar-Nov) this fires at 9:00 AM local
+    # 8:00 AM PST = 4:00 PM UTC
     - cron: "0 16 * * *"
-    # 6:00 PM PST = 2:00 AM UTC next day (standard time)
-    # Note: during PDT (Mar-Nov) this fires at 7:00 PM local
+    # 6:00 PM PST = 2:00 AM UTC next day
     - cron: "0 2 * * *"
-    - cron: "50 3 * * *"
 
+    # --- TEMPORARY TEST CRONS (remove after confirming schedule fires) ---
+    # 8:03 PM PST = 4:03 AM UTC
+    - cron: "3 4 * * *"
+    # 8:05 PM PST = 4:05 AM UTC
+    - cron: "5 4 * * *"
 
-  # Manual trigger — always available as a fallback when cron is delayed
+  # Manual fallback — always available
   workflow_dispatch:
 
 # Prevent overlapping runs (a stuck run would block the next schedule)
