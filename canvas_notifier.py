@@ -10,6 +10,7 @@ import os
 import sys
 import requests
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -103,14 +104,15 @@ def is_upcoming(due_str):
 
 
 def friendly_date(due_str):
-    """Convert an ISO date to a readable string."""
+    """Convert an ISO date to a readable string in Pacific Time."""
     if not due_str:
         return "No due date"
     try:
         due = datetime.fromisoformat(due_str.replace("Z", "+00:00"))
     except ValueError:
         return due_str
-    return due.strftime("%a %b %d, %I:%M %p %Z")
+    due_pst = due.astimezone(ZoneInfo("America/Los_Angeles"))
+    return due_pst.strftime("%a %b %d, %I:%M %p %Z")
 
 
 def time_until(due_str):
