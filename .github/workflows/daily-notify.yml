@@ -2,16 +2,17 @@ name: Daily Canvas Notification
 
 on:
   schedule:
-    # 8:00 AM PST = 4:00 PM UTC
-    - cron: "0 16 * * *"
-    # 6:00 PM PST = 2:00 AM UTC next day
-    - cron: "0 2 * * *"
+    # ── 8:00 AM Pacific (fires correct hour year-round) ──
+    - cron: "0 16 * * *"   # 8 AM PST (Nov–Mar)
+    - cron: "0 15 * * *"   # 8 AM PDT (Mar–Nov)
+
+    # ── 6:00 PM Pacific (fires correct hour year-round) ──
+    - cron: "0 2 * * *"    # 6 PM PST (Nov–Mar)
+    - cron: "0 1 * * *"    # 6 PM PDT (Mar–Nov)
 
     # --- TEMPORARY TEST CRONS (remove after confirming schedule fires) ---
-    # 8:03 PM PST = 4:03 AM UTC
-    - cron: "3 4 * * *"
-    # 8:05 PM PST = 4:05 AM UTC
-    - cron: "5 4 * * *"
+    - cron: "3 4 * * *"    # test window 1
+    - cron: "5 4 * * *"    # test window 2
 
   # Manual fallback — always available
   workflow_dispatch:
@@ -21,6 +22,9 @@ concurrency:
   group: canvas-notify
   cancel-in-progress: true
 
+env:
+  TZ: America/Los_Angeles
+
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -28,18 +32,37 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Check Pacific time gate
+        id: timecheck
+        run: |
+          HOUR=$(date +%-H)
+          echo "Current Pacific hour: $HOUR"
+          if [ "$HOUR" = "8" ] || [ "$HOUR" = "18" ] || [ "$HOUR" = "20" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual trigger — running regardless of hour"
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Off-target hour for Pacific time, skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check out repository
+        if: steps.timecheck.outputs.should_run == 'true'
         uses: actions/checkout@v4
 
       - name: Set up Python
+        if: steps.timecheck.outputs.should_run == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
+        if: steps.timecheck.outputs.should_run == 'true'
         run: pip install -r requirements.txt
 
       - name: Run Canvas notifier
+        if: steps.timecheck.outputs.should_run == 'true'
         env:
           CANVAS_API_URL: ${{ secrets.CANVAS_API_URL }}
           CANVAS_API_TOKEN: ${{ secrets.CANVAS_API_TOKEN }}
